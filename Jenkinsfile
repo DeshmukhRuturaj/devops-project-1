@@ -88,11 +88,14 @@ pipeline {
                        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-ruturaj']]){
                             dir('infra') {
                                 sh 'echo "=================Fixing LoadBalancer Config=================="'
-                                sh 'echo "Removing target group attachments from state..."'
-                                sh 'terraform state list | grep target_group_attachment | xargs -r terraform state rm'
-                                sh 'echo "Planning with fixed configuration..."'
+                                sh 'echo "Step 1: Removing all target group references from state..."'
+                                sh 'terraform state list | grep target_group_attachment | xargs -r terraform state rm || true'
+                                sh 'terraform state list | grep "lb_target_group.aws_lb_target_group" | head -1 | xargs -r terraform state rm || true'
+                                sh 'echo "Step 2: Force refresh state..."'
+                                sh 'terraform refresh'
+                                sh 'echo "Step 3: Planning with cleaned state..."'
                                 sh 'terraform plan'
-                                sh 'echo "Applying fixed configuration..."'
+                                sh 'echo "Step 4: Applying fixed configuration..."'
                                 sh 'terraform apply -auto-approve'
                             }
                         }
