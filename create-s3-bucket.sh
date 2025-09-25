@@ -8,6 +8,20 @@ REGION="eu-central-1"
 
 echo "Creating S3 bucket: $BUCKET_NAME in region: $REGION"
 
+# Delete existing bucket if it exists in wrong region (optional)
+echo "Checking if bucket exists in different region..."
+aws s3api head-bucket --bucket $BUCKET_NAME 2>/dev/null
+if [ $? -eq 0 ]; then
+    echo "Bucket exists. Checking region..."
+    EXISTING_REGION=$(aws s3api get-bucket-location --bucket $BUCKET_NAME --query 'LocationConstraint' --output text)
+    if [ "$EXISTING_REGION" != "$REGION" ] && [ "$EXISTING_REGION" != "None" ]; then
+        echo "Bucket exists in region: $EXISTING_REGION, but we need: $REGION"
+        echo "Please delete the existing bucket manually if it's empty:"
+        echo "aws s3 rb s3://$BUCKET_NAME --force"
+        exit 1
+    fi
+fi
+
 # Create the S3 bucket
 aws s3api create-bucket \
     --bucket $BUCKET_NAME \
