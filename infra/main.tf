@@ -83,6 +83,6 @@ module "rds_db_instance" {
   rds_mysql_sg_id      = module.security_group.rds_mysql_sg_id
   mysql_db_identifier  = "mydb"
   mysql_username       = "root"
-  mysql_password       = "root"
+  mysql_password       = "rootpassword123"
   mysql_dbname         = "cv"
 }
