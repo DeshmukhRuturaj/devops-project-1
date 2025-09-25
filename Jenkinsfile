@@ -5,6 +5,7 @@ pipeline {
             booleanParam(name: 'PLAN_TERRAFORM', defaultValue: false, description: 'Check to plan Terraform changes')
             booleanParam(name: 'APPLY_TERRAFORM', defaultValue: false, description: 'Check to apply Terraform changes')
             booleanParam(name: 'DESTROY_TERRAFORM', defaultValue: false, description: 'Check to apply Terraform changes')
+            booleanParam(name: 'FIX_LOADBALANCER', defaultValue: false, description: 'Check to fix load balancer configuration issues')
     }
 
     stages {
@@ -73,6 +74,26 @@ pipeline {
                             dir('infra') {
                                 sh 'echo "=================Terraform Destroy=================="'
                                 sh 'terraform destroy -auto-approve'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Fix LoadBalancer') {
+            steps {
+                script {
+                    if (params.FIX_LOADBALANCER) {
+                       withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-ruturaj']]){
+                            dir('infra') {
+                                sh 'echo "=================Fixing LoadBalancer Config=================="'
+                                sh 'echo "Removing target group attachments from state..."'
+                                sh 'terraform state list | grep target_group_attachment | xargs -r terraform state rm'
+                                sh 'echo "Planning with fixed configuration..."'
+                                sh 'terraform plan'
+                                sh 'echo "Applying fixed configuration..."'
+                                sh 'terraform apply -auto-approve'
                             }
                         }
                     }
