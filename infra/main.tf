@@ -47,7 +47,7 @@ module "lb_target_group" {
 module "alb" {
   source                    = "./load-balancer"
   lb_name                   = "dev-proj-1-alb"
-  is_external               = false
+  is_external               = true
   lb_type                   = "application"
   sg_enable_ssh_https       = module.security_group.sg_ec2_sg_ssh_http_id
   subnet_ids                = tolist(module.networking.dev_proj_1_public_subnets)
@@ -79,10 +79,10 @@ module "aws_ceritification_manager" {
 module "rds_db_instance" {
   source               = "./rds"
   db_subnet_group_name = "dev_proj_1_rds_subnet_group"
-  subnet_groups        = tolist(module.networking.dev_proj_1_public_subnets)
+  subnet_groups        = tolist(module.networking.dev_proj_1_private_subnets)
   rds_mysql_sg_id      = module.security_group.rds_mysql_sg_id
   mysql_db_identifier  = "mydb"
-  mysql_username       = "dbuser"
-  mysql_password       = "dbpassword"
-  mysql_dbname         = "devprojdb"
+  mysql_username       = "root"
+  mysql_password       = "root"
+  mysql_dbname         = "cv"
 }

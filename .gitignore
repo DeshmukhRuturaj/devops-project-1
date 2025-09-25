@@ -1,3 +1,8 @@
+# SSH Keys - Never commit private keys!
+devops-key
+*.pem
+*.key
+
 # Local .terraform directories
 **/.terraform/*
 
